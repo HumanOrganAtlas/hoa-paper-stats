@@ -1,9 +1,11 @@
+import collections
 from hoa_tools.inventory import load_inventory
 from hoa_tools.dataset import get_dataset
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.ticker
+import matplotlib.pyplot as plt
 
 
 inventory = load_inventory()
@@ -40,9 +42,62 @@ def plot_voxel_dataset_size():
     ax.grid(alpha=0.5)
     ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
     fig.savefig(
-        "figures/voxel_dataset_size.png",
+        "figures/voxel_dataset_size.svg",
+    )
+
+
+def plot_disease_types():
+    histories = [d.donor.medical_history for d in datasets]
+    histories = [h if h is not None else "" for h in histories]
+
+    causes = [d.donor.cause_of_death for d in datasets]
+    causes = [h if h is not None else "" for h in causes]
+
+    histories = {h + " " + c for h, c in zip(histories, causes)}
+
+    keywords = [
+        "Gout",
+        "Stroke",
+        "Cataract",
+        "Stent",
+        "Diabetes",
+        "Renal failure",
+        "Nephrectomy",
+        "Bacterial superinfection",
+        "Predementia",
+        "Myocardial infarction",
+        "Heart failure",
+        "Cancer",
+        "Coronary heart disease",
+        "COVID-19",
+        "Chronic obstructive pulmonary disease",
+        "Cognitive disorders of vascular origin",
+        "Lung pneumopathy",
+        "Liver Failure",
+    ]
+    counts = {
+        k: len([h for h in histories if k.lower() in h.lower()]) for k in keywords
+    }
+    counts["Diabetes"] = len({d.donor.id for d in datasets if d.donor.diabetes})
+    counts["Hypertension"] = len({d.donor.id for d in datasets if d.donor.hypertension})
+    counts = collections.OrderedDict(sorted(counts.items()))
+    print(counts)
+
+    fig, ax = plt.subplots(tight_layout=True)
+    ax.xaxis.grid(linewidth=1, zorder=-10)
+    ax.barh(list(counts.keys()), list(counts.values()), zorder=10)
+    ax.set_xlabel("Number of donors")
+    ax.spines["top"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
+    ax.invert_yaxis()
+
+    fig.savefig(
+        "figures/disease_bar.svg",
     )
 
 
 if __name__ == "__main__":
-    plot_voxel_dataset_size()
+    plot_disease_types()
+    # plot_voxel_dataset_size()
