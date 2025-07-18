@@ -1,4 +1,5 @@
 import collections
+from pathlib import Path
 from hoa_tools.inventory import load_inventory
 from hoa_tools.dataset import get_dataset
 import pandas as pd
@@ -13,6 +14,8 @@ plt.rcParams.update({"font.sans-serif": "Arial"})
 inventory = load_inventory()
 datasets = {get_dataset(name) for name in inventory.index}
 datasets = {d for d in datasets if d.donor.id not in ["AUMC-005"]}
+
+figure_dir = Path(__file__).parent / "figures"
 
 
 def plot_voxel_dataset_size():
@@ -44,7 +47,7 @@ def plot_voxel_dataset_size():
     ax.set_xlim(left=0)
     ax.grid(alpha=0.5)
     ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    fig.savefig("figures/voxel_dataset_size.svg")
+    fig.savefig(figure_dir / "voxel_dataset_size.svg")
 
 
 def plot_disease_types():
@@ -81,7 +84,6 @@ def plot_disease_types():
     counts["Diabetes"] = len({d.donor.id for d in datasets if d.donor.diabetes})
     counts["Hypertension"] = len({d.donor.id for d in datasets if d.donor.hypertension})
     counts = collections.OrderedDict(sorted(counts.items()))
-    print(counts)
 
     fig, ax = plt.subplots(tight_layout=True)
     ax.xaxis.grid(linewidth=1, zorder=-10)
@@ -93,7 +95,7 @@ def plot_disease_types():
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     ax.invert_yaxis()
 
-    fig.savefig("figures/disease_bar.svg", dpi=150)
+    fig.savefig(figure_dir / "disease_bar.svg")
 
 
 def plot_donor_table():
@@ -141,7 +143,7 @@ def plot_donor_table():
     ax.axis("off")
     ax.axis("tight")
     ax.table(cells, loc="center", cellLoc="left")
-    fig.savefig("figures/donor_table.svg")
+    fig.savefig(figure_dir / "donor_table.svg")
 
     df = pd.DataFrame(cells)
     df.to_csv("donor_data.csv", index=False)
@@ -207,7 +209,7 @@ def plot_scan_speeds():
     ax.set_ylim(1e6, 1e8)
     ax.xaxis.set_major_locator(matplotlib.dates.YearLocator())
     ax.xaxis.set_minor_locator(matplotlib.dates.MonthLocator())
-    fig.savefig("figures/voxel_speed.svg")
+    fig.savefig(figure_dir / "voxel_speed.svg")
 
 
 def plot_scan_volume_time():
@@ -267,12 +269,12 @@ def plot_scan_volume_time():
     ax.set_ylim(-1, 6)
     """
     fig.tight_layout()
-    fig.savefig("figures/scan_speed.svg")
+    fig.savefig(figure_dir / "scan_speed.svg")
 
 
 if __name__ == "__main__":
-    # plot_disease_types()
-    # plot_voxel_dataset_size()
-    # plot_donor_table()
+    plot_disease_types()
+    plot_voxel_dataset_size()
+    plot_donor_table()
     plot_scan_speeds()
     plot_scan_volume_time()
