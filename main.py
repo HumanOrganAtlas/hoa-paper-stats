@@ -1,8 +1,6 @@
 import collections
-from datetime import date
 from hoa_tools.inventory import load_inventory
 from hoa_tools.dataset import get_dataset
-from matplotlib.axes import Axes
 import pandas as pd
 import numpy as np
 import seaborn as sns
