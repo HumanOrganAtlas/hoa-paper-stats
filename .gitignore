@@ -175,3 +175,5 @@ cython_debug/
 
 
 figures/*
+
+.DS_Store
