@@ -11,6 +11,7 @@ plt.rcParams.update({"font.sans-serif": "Arial"})
 
 inventory = load_inventory()
 datasets = {get_dataset(name) for name in inventory.index}
+datasets = {d for d in datasets if d.donor.id not in ["AUMC-005"]}
 
 
 def plot_voxel_dataset_size():
@@ -96,10 +97,9 @@ def plot_disease_types():
 
 def plot_donor_table():
     donors = {d.donor.id: d.donor for d in datasets}
+    organs = sorted({d.sample.organ for d in datasets})
     cells = []
-    cells.append(
-        ["Donor ID", "Sex", "Age", "Lung", "Heart", "Kidney", "Brain", "Spleen"]
-    )
+    cells.append(["Donor ID", "Sex", "Age"] + organs)
     for donor in sorted(donors.values(), key=lambda d: d.id):
         cells.append(
             [
@@ -108,7 +108,7 @@ def plot_donor_table():
                 str(int(donor.age.root)) if donor.age is not None else "",
             ]
         )
-        for organ in ["lung", "heart", "kidney", "brain", "spleen"]:
+        for organ in organs:
             n_zoom = len(
                 [
                     d
