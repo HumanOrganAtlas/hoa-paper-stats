@@ -2,6 +2,7 @@ import collections
 from datetime import date
 from hoa_tools.inventory import load_inventory
 from hoa_tools.dataset import get_dataset
+from matplotlib.axes import Axes
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -157,7 +158,6 @@ def get_scan_data():
             scan.scan_type == "zseries"
             and scan.n_scans is not None
             and scan.scan_time is not None
-            # and scan.date <= date(2023, 1, 1)
         ):
             total_scan_time = scan.n_scans.root * scan.scan_time.root / 60 / 60
             n_vox = (
@@ -212,8 +212,69 @@ def plot_scan_speeds():
     fig.savefig("figures/voxel_speed.svg")
 
 
+def plot_scan_volume_time():
+    vox_per_sec = 3e7
+
+    def scan_time(volume_um, resolution_um):
+        scan_time_s = volume_um / (resolution_um**3) / vox_per_sec
+        return scan_time_s
+
+    # fig, axs = plt.subplots(nrows=2, sharex=True, height_ratios=[1, 4], figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(5, 5))
+
+    # ax: Axes = axs[1]
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position("right")
+    ax.set_xlabel("Physical volume / mm$^{3}$")
+    ax.set_ylabel("Scan time / s")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.grid(zorder=-10)
+    xlim = (1e1, 1e7)
+    ax.set_xlim(*xlim)
+    ax.set_ylim(1e1, 2e5)
+
+    for y, label in [(60 * 60 * 24, "1 day"), (60 * 60, "1 hour"), (60, "1 minute")]:
+        kwargs = dict(color="k", linestyle="--", linewidth=1.3)
+        ax.axhline(y, **kwargs)
+        ax.text(1e1, y, label + " ", va="center", ha="right")
+
+    # Lines of constant voxel size
+    volume = np.geomspace(*xlim, 100)
+    for res in [2, 6, 20]:
+        ax.plot(volume, scan_time(volume * 1e9, res), label=f"{res} μm")
+
+    ax.legend(
+        title="Voxel size",
+        framealpha=1,
+        fontsize=8,
+        title_fontproperties={"size": 9},
+        ncols=1,
+    )
+
+    """
+    ax = axs[0]
+    ax.axis("off")
+
+    for organ in ["lung", "heart", "brain", "kidney", "spleen"]:
+        organ_df = df[df["organ"] == organ]
+        organ_df = organ_df[organ_df["Dataset type"] == "overview"]["physical_size"]
+        ax.scatter(organ_df, [organ] * len(organ_df), s=50, edgecolor="k")
+        ax.text(
+            organ_df.max() * 1.5, organ, organ.capitalize(), va="center", fontsize=8
+        )
+
+    ax.xaxis.grid()
+
+    ax.set_ylim(-1, 6)
+    """
+    fig.tight_layout()
+    fig.savefig("figures/scan_speed.svg")
+
+
 if __name__ == "__main__":
     # plot_disease_types()
     # plot_voxel_dataset_size()
     # plot_donor_table()
     plot_scan_speeds()
+    plot_scan_volume_time()
