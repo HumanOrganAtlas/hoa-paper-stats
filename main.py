@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.ticker
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({"font.sans-serif": "Arial"})
 
 inventory = load_inventory()
 datasets = {get_dataset(name) for name in inventory.index}
@@ -41,9 +42,7 @@ def plot_voxel_dataset_size():
     ax.set_xlim(left=0)
     ax.grid(alpha=0.5)
     ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    fig.savefig(
-        "figures/voxel_dataset_size.svg",
-    )
+    fig.savefig("figures/voxel_dataset_size.svg")
 
 
 def plot_disease_types():
@@ -62,18 +61,17 @@ def plot_disease_types():
         "Stent",
         "Diabetes",
         "Renal failure",
-        "Nephrectomy",
         "Bacterial superinfection",
         "Predementia",
         "Myocardial infarction",
         "Heart failure",
         "Cancer",
         "Coronary heart disease",
-        "COVID-19",
+        "COVID",
         "Chronic obstructive pulmonary disease",
         "Cognitive disorders of vascular origin",
-        "Lung pneumopathy",
         "Liver Failure",
+        "Dandy-Walker syndrome variant",
     ]
     counts = {
         k: len([h for h in histories if k.lower() in h.lower()]) for k in keywords
@@ -93,11 +91,62 @@ def plot_disease_types():
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     ax.invert_yaxis()
 
-    fig.savefig(
-        "figures/disease_bar.svg",
+    fig.savefig("figures/disease_bar.svg", dpi=150)
+
+
+def plot_donor_table():
+    donors = {d.donor.id: d.donor for d in datasets}
+    cells = []
+    cells.append(
+        ["Donor ID", "Sex", "Age", "Lung", "Heart", "Kidney", "Brain", "Spleen"]
     )
+    for donor in sorted(donors.values(), key=lambda d: d.id):
+        cells.append(
+            [
+                donor.id,
+                donor.sex,
+                str(int(donor.age.root)) if donor.age is not None else "",
+            ]
+        )
+        for organ in ["lung", "heart", "kidney", "brain", "spleen"]:
+            n_zoom = len(
+                [
+                    d
+                    for d in datasets
+                    if d.donor == donor
+                    and d.sample.organ == organ
+                    and d.dataset_type == "zoom"
+                ]
+            )
+            n_overview = len(
+                [
+                    d
+                    for d in datasets
+                    if d.donor == donor
+                    and d.sample.organ == organ
+                    and d.dataset_type == "overview"
+                ]
+            )
+            cells[-1].append(
+                (
+                    str(n_overview) + " + " + str(n_zoom)
+                    if n_overview + n_zoom > 0
+                    else ""
+                ),
+            )
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    fig.patch.set_visible(False)
+    ax.axis("off")
+    ax.axis("tight")
+    ax.table(cells, loc="center", cellLoc="left")
+    fig.savefig("figures/donor_table.svg")
+
+    df = pd.DataFrame(cells)
+    df.to_csv("donor_data.csv", index=False)
 
 
 if __name__ == "__main__":
     plot_disease_types()
-    # plot_voxel_dataset_size()
+    plot_voxel_dataset_size()
+    plot_donor_table()
