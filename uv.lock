@@ -488,7 +488,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "hoa-tools", specifier = "==1.0.4" },
+    { name = "hoa-tools", specifier = "==1.0.6" },
     { name = "matplotlib", specifier = "==3.10.3" },
     { name = "numpy", specifier = "==2.2.6" },
     { name = "pandas", specifier = "==2.2.3" },
@@ -500,7 +500,7 @@ dev = [{ name = "pre-commit", specifier = ">=4.2.0" }]
 
 [[package]]
 name = "hoa-tools"
-version = "1.0.4"
+version = "1.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dask", extra = ["array"] },
@@ -512,9 +512,9 @@ dependencies = [
     { name = "xarray" },
     { name = "zarr" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/d7/3b7b819a4c7a4419dd23407eb6d65fb0f06472bc61519f12512377786542/hoa_tools-1.0.4.tar.gz", hash = "sha256:c96592728f393ad8fc721b26b059fa6200117cf72d3f391dabcd67d342c192c0", size = 89041, upload-time = "2025-05-15T13:28:56.245Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/0c/7cb411d69d847ba42c92c85412d07b19776f5652e7e71de823ab302161d6/hoa_tools-1.0.6.tar.gz", hash = "sha256:de6928f46c7ee9e0c4863fffae61ab87166288570f8b47297831453b3a05b5e8", size = 116576, upload-time = "2025-07-18T10:11:32.964Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/d6/0dcc9e1e5b2e6842193c450d64acb4eb2b48963870fe11e7f1c297db34b3/hoa_tools-1.0.4-py3-none-any.whl", hash = "sha256:a0891b71a8e283ea8e13bfe99a1a3b2cb93ed767117fc8ea4c155875b11c0864", size = 434768, upload-time = "2025-05-15T13:28:54.353Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/29/aba2644942643c1c42cfb0ef2dda4af41aa9b3833422e89a9bb2b1edf98f/hoa_tools-1.0.6-py3-none-any.whl", hash = "sha256:7b6ad40475db30c04039b4cc77ca0e1d018b9cd2c7e92253527610f2aa6917b5", size = 683794, upload-time = "2025-07-18T10:11:31.685Z" },
 ]
 
 [[package]]
