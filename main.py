@@ -1,4 +1,5 @@
 import collections
+from datetime import date
 from hoa_tools.inventory import load_inventory
 from hoa_tools.dataset import get_dataset
 import pandas as pd
@@ -6,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.ticker
 import matplotlib.pyplot as plt
+import matplotlib.dates
 
 plt.rcParams.update({"font.sans-serif": "Arial"})
 
@@ -146,7 +148,72 @@ def plot_donor_table():
     df.to_csv("donor_data.csv", index=False)
 
 
+def get_scan_data():
+    data = collections.defaultdict(list)
+
+    for dataset in datasets:
+        scan = dataset.scan
+        if (
+            scan.scan_type == "zseries"
+            and scan.n_scans is not None
+            and scan.scan_time is not None
+            # and scan.date <= date(2023, 1, 1)
+        ):
+            total_scan_time = scan.n_scans.root * scan.scan_time.root / 60 / 60
+            n_vox = (
+                dataset.data.shape[0] * dataset.data.shape[1] * dataset.data.shape[2]
+            )
+            data_size = (
+                dataset.data.shape[0]
+                * dataset.data.shape[1]
+                * dataset.data.shape[2]
+                * 2
+                / 1e9
+            )
+            physical_size = (
+                dataset.data.shape[0]
+                * dataset.data.shape[1]
+                * dataset.data.shape[2]
+                * (scan.pixel_size * 1e-3) ** 3
+                * np.pi
+                / 4
+            )
+
+            data["single_scan_time"].append(scan.scan_time.root / 60)
+            data["physical_size"].append(physical_size)
+            data["data_size"].append(data_size)
+            data["scan_time"].append(total_scan_time)
+            data["date"].append(scan.date)
+            data["Dataset type"].append(dataset.dataset_type)
+            data["scan_speed"].append(n_vox / (total_scan_time * 60 * 60))
+            data["det_y"].append(
+                scan.sensor_roi_y_size.root * scan.n_scans.root
+                if scan.sensor_roi_y_size is not None
+                else 0
+            )
+            data["nz"].append(dataset.data.shape[2])
+            data["voxel_size"].append(scan.pixel_size)
+            data["organ"].append(dataset.sample.organ)
+
+    return pd.DataFrame(data)
+
+
+def plot_scan_speeds():
+    fig, ax = plt.subplots(figsize=(5, 5))
+
+    df = get_scan_data()
+    ax = sns.scatterplot(x="date", y="scan_speed", hue="Dataset type", data=df, ax=ax)
+    ax.set_yscale("log")
+    ax.set_xlabel("Scan date")
+    ax.set_ylabel("Voxels per second")
+    ax.set_ylim(1e6, 1e8)
+    ax.xaxis.set_major_locator(matplotlib.dates.YearLocator())
+    ax.xaxis.set_minor_locator(matplotlib.dates.MonthLocator())
+    fig.savefig("figures/voxel_speed.svg")
+
+
 if __name__ == "__main__":
-    plot_disease_types()
-    plot_voxel_dataset_size()
-    plot_donor_table()
+    # plot_disease_types()
+    # plot_voxel_dataset_size()
+    # plot_donor_table()
+    plot_scan_speeds()
